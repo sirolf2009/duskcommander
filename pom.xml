@@ -16,6 +16,13 @@
 		<xtend.version>2.13.0</xtend.version>
 	</properties>
 
+	<repositories>
+		<repository>
+			<id>terminalfx-repo</id>
+			<url>https://github.com/javaterminal/terminalfx/raw/master/releases</url>
+		</repository>
+	</repositories>
+
 	<organization>
 		<!-- Used as the 'Vendor' for JNLP generation -->
 		<name>${organizationName}</name>
