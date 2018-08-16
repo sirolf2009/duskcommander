@@ -12,10 +12,13 @@ import javafx.scene.input.KeyCodeCombination
 import javafx.scene.input.KeyCombination
 import javafx.scene.layout.BorderPane
 import javafx.stage.Stage
+import javafx.scene.control.MenuItem
+import javafx.beans.property.SimpleBooleanProperty
 
 class DuskCommander extends Application {
 	
-	public static Subject<Object> eventBus = PublishSubject.create()
+	public static val debugProperty = new SimpleBooleanProperty(false)
+	public static val Subject<Object> eventBus = PublishSubject.create()
 
 	def static void main(String[] args) {
 		launch(args)
@@ -25,7 +28,11 @@ class DuskCommander extends Application {
 		val root = new BorderPane()
 		root.getStyleClass().add("background")
 		
-		root.setTop(new MenuBar(new Menu("_File")))
+		root.setTop(new MenuBar(new Menu("_File") => [
+			getItems().add(new MenuItem("Toggle Debug") => [
+				onAction = [debugProperty.set(!debugProperty.get())]
+			])
+		]))
 		root.setCenter(new FileBrowserSplit())
 		val scene = new Scene(root, 1200, 600)
 		scene.getAccelerators().put(new KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN)) [

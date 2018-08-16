@@ -2,22 +2,25 @@ package com.sirolf2009.duskcommander.filebrowser
 
 import com.kodedu.terminalfx.Terminal
 import com.kodedu.terminalfx.config.TerminalConfig
+import com.sirolf2009.duskcommander.DuskCommander
+import io.reactivex.Observable
 import java.io.File
+import java.nio.file.Files
+import java.util.stream.Collectors
 import javafx.geometry.Orientation
+import javafx.scene.control.Label
 import javafx.scene.control.SplitPane
+import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyEvent
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
 import org.eclipse.xtend.lib.annotations.Accessors
+import org.tbee.javafx.scene.layout.MigPane
 
 import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
 import static extension io.reactivex.rxjavafx.observables.JavaFxObservable.*
-import io.reactivex.Observable
-import java.nio.file.Files
-import java.util.stream.Collectors
-import javafx.scene.input.KeyEvent
-import javafx.scene.input.KeyCode
 
 @Accessors class FileBrowserView extends SplitPane {
 
@@ -51,7 +54,12 @@ import javafx.scene.input.KeyCode
 			getButtons().clear()
 			terminal.getOutputWriter()?.append("cd " + it + "\n")?.flush()
 		].computation().map [
-			#[fileBrowserButton("/")] + toPath().map[fileBrowserButton(toString())]
+			val path = toPath()
+			#[fileBrowserButton("/", "/")] + (0 ..< path.size()).map[
+				path.get(it).toString() -> "/"+(0 .. it).map[
+					path.get(it).toString()+"/"
+				].reduce[a,b|a+b]
+			].map[fileBrowserButton(key, value)]
 		].platform().doOnError [
 			printStackTrace()
 		].subscribe [
@@ -83,8 +91,21 @@ import javafx.scene.input.KeyCode
 				}
 			}
 		]
+		
+		val debugPanel = new MigPane("fillx", "[right]rel[grow,fill]", "[]10[]") => [
+			getStyleClass().add("debug-panel")
+			managedProperty().bind(DuskCommander.debugProperty)
+			add(new Label("Path"))
+			add(new Label() => [
+				textProperty().bind(fileBrowser.getPathProperty().asString())
+			], "wrap")
+			add(new Label("Focused"))
+			add(new Label() => [
+				textProperty().bind(fileBrowser.getTable().focusedProperty().asString())
+			])
+		]
 
-		getItems().addAll(new VBox(commandElements, pathElements, fileBrowser), terminal)
+		getItems().addAll(new VBox(debugPanel, commandElements, pathElements, fileBrowser), terminal)
 		setDividerPositions(0.8)
 	}
 
@@ -116,8 +137,8 @@ import javafx.scene.input.KeyCode
 		pathElements.getChildren()
 	}
 
-	def fileBrowserButton(String path) {
-		new PathButton(fileBrowser.getPathProperty(), path)
+	def fileBrowserButton(String name, String path) {
+		new PathButton(fileBrowser.getPathProperty(), name, path)
 	}
 
 }

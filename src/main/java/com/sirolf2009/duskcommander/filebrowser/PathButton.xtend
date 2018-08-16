@@ -10,8 +10,8 @@ import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
 
 class PathButton extends Button {
 	
-	new(ObjectProperty<File> pathProperty, String path) {
-		setText(path)
+	new(ObjectProperty<File> pathProperty, String name, String path) {
+		setText(name)
 		val file = new File(path)
 		actionEventsOf(this).platform().subscribe[
 			pathProperty.set(file)

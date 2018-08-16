@@ -89,6 +89,7 @@ import static extension io.reactivex.rxjavafx.observables.JavaFxObservable.*
 			filterText.unbind()
 			filterText.set("")
 			table.setItems(new FilteredList(FXCollections.observableArrayList(it)))
+			table.getSelectionModel().focus(0)
 		]
 		pathProperty.set(root)
 		addEventFilter(KeyEvent.ANY) [
@@ -100,7 +101,9 @@ import static extension io.reactivex.rxjavafx.observables.JavaFxObservable.*
 			switch (getCode()) {
 				case KeyCode.ENTER,
 				case KeyCode.RIGHT: {
+					println("right")
 					val selected = Optional.ofNullable(table.getSelectionModel().getSelectedItem()).orElse(table.getItems().get(0))
+					println(selected+" "+table.getSelectionModel().getSelectedItem())
 					if(!selected.isFile()) {
 						DuskCommander.eventBus.onNext(new FileBrowserSplit.Open())
 					}

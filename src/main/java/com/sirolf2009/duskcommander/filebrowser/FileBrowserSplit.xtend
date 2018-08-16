@@ -24,6 +24,7 @@ class FileBrowserSplit extends SplitPane {
 			getSecundary().pathProperty().set(getPrimary().pathProperty().get())
 		]
 		DuskCommander.eventBus.type(Open).subscribe [
+			println(getPrimaryFile())
 			getPrimaryFile().ifPresent[getPrimary().navigateTo(it)]
 		]
 		DuskCommander.eventBus.type(OpenInOther).subscribe [
@@ -44,11 +45,21 @@ class FileBrowserSplit extends SplitPane {
 	}
 
 	def getPrimaryFile() {
-		return Optional.ofNullable(getPrimary().getFileBrowser().getSelectionModel().getSelectedItem())
+		return getPrimary().getFile()
 	}
 
 	def getSecundaryFile() {
-		return Optional.ofNullable(getSecundary().getFileBrowser().getSelectionModel().getSelectedItem())
+		return getSecundary().getFile()
+	}
+	
+	def getFile(FileBrowserView fileBrowser) {
+		if(fileBrowser.getFileBrowser().getSelectionModel().getSelectedItem() !== null) {
+			return Optional.of(fileBrowser.getFileBrowser().getSelectionModel().getSelectedItem())
+		} else if (fileBrowser.getFileBrowser().getTable().getItems().size() > 0) {
+			return Optional.of(fileBrowser.getFileBrowser().getTable().getItems().get(0))
+		} else {
+			return Optional.empty()
+		}
 	}
 
 	def getPrimary() {
