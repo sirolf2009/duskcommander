@@ -42,6 +42,7 @@ import javafx.scene.input.KeyCode
 			setForegroundColor(Color.web("#839496"))
 			setCursorColor(Color.web("#93a1a1", 0.5d))
 		])
+		terminal.onTerminalFxReady[terminal.command("cd " + root + "\n")]
 
 		pathElements = new HBox() => [
 			getStyleClass().add("background")
