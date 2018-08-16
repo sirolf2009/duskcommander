@@ -1,1 +1,2 @@
 build:mvn clean install
+commit:commit

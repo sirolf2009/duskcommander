@@ -24,22 +24,22 @@ class FileBrowserSplit extends SplitPane {
 			getSecundary().pathProperty().set(getPrimary().pathProperty().get())
 		]
 		DuskCommander.eventBus.type(Open).subscribe [
-			getPrimaryFile().ifPresent[getPrimary().pathProperty().set(it)]
+			getPrimaryFile().ifPresent[getPrimary().navigateTo(it)]
 		]
 		DuskCommander.eventBus.type(OpenInOther).subscribe [
-			getPrimaryFile().ifPresent[getSecundary().pathProperty().set(it)]
+			getPrimaryFile().ifPresent[getSecundary().navigateTo(it)]
 		]
 		DuskCommander.eventBus.type(OpenInBoth).subscribe [
 			getPrimaryFile().ifPresent [
-				getPrimary().pathProperty().set(it)
-				getSecundary().pathProperty().set(it)
+				getPrimary().navigateTo(it)
+				getSecundary().navigateTo(it)
 			]
 		]
 		DuskCommander.eventBus.type(Ascend).subscribe [
-			Optional.ofNullable(getPrimary().pathProperty().get().getParentFile()).ifPresent[getPrimary().pathProperty().set(it)]
+			Optional.ofNullable(getPrimary().pathProperty().get().getParentFile()).ifPresent[getPrimary().navigateTo(it)]
 		]
 		DuskCommander.eventBus.type(AscendInOther).subscribe [
-			Optional.ofNullable(getPrimary().pathProperty().get().getParentFile()).ifPresent[getSecundary().pathProperty().set(it)]
+			Optional.ofNullable(getPrimary().pathProperty().get().getParentFile()).ifPresent[getSecundary().navigateTo(it)]
 		]
 	}
 

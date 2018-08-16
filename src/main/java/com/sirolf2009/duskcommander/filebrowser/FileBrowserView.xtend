@@ -87,8 +87,24 @@ import javafx.scene.input.KeyCode
 		setDividerPositions(0.8)
 	}
 
+	def navigateTo(File file) {
+		clearFilter()
+		pathProperty().set(file)
+	}
+
 	def pathProperty() {
 		return fileBrowser.getPathProperty()
+	}
+
+	def clearFilter() {
+		filterText() => [
+			unbind()
+			set("")
+		]
+	}
+
+	def filterText() {
+		return fileBrowser.getFilterText()
 	}
 
 	def getCommands() {

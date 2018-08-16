@@ -98,11 +98,10 @@ import static extension io.reactivex.rxjavafx.observables.JavaFxObservable.*
 		]
 		addEventFilter(KeyEvent.KEY_RELEASED) [
 			switch (getCode()) {
+				case KeyCode.ENTER,
 				case KeyCode.RIGHT: {
 					val selected = Optional.ofNullable(table.getSelectionModel().getSelectedItem()).orElse(table.getItems().get(0))
 					if(!selected.isFile()) {
-						filterText.unbind()
-						filterText.set("")
 						DuskCommander.eventBus.onNext(new FileBrowserSplit.Open())
 					}
 				}
