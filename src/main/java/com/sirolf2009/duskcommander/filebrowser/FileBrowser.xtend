@@ -1,8 +1,8 @@
 package com.sirolf2009.duskcommander.filebrowser
 
 import com.sirolf2009.duskcommander.DuskCommander
+import io.reactivex.Observable
 import io.reactivex.rxjavafx.schedulers.JavaFxScheduler
-import io.reactivex.schedulers.Schedulers
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.attribute.PosixFilePermissions
@@ -24,7 +24,7 @@ import javafx.scene.layout.AnchorPane
 import org.eclipse.xtend.lib.annotations.Accessors
 import tornadofx.SmartResize
 
-import static extension io.reactivex.rxjavafx.observables.JavaFxObservable.*
+import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
 
 @Accessors class FileBrowser extends AnchorPane {
 
@@ -32,7 +32,7 @@ import static extension io.reactivex.rxjavafx.observables.JavaFxObservable.*
 	val filterText = new SimpleStringProperty("")
 	val TableView<File> table
 
-	new(File root) {
+	new() {
 		getStyleClass().add("background")
 		table = new TableView<File>()
 		table.setItems(FXCollections.emptyObservableList())
@@ -81,17 +81,6 @@ import static extension io.reactivex.rxjavafx.observables.JavaFxObservable.*
 			]
 		])
 
-		pathProperty.valuesOf().observeOn(Schedulers.io).map [
-			listFiles().filter[!isHidden()]
-		].map [
-			sortBy[getName()]
-		].observeOn(JavaFxScheduler.platform()).subscribe [
-			filterText.unbind()
-			filterText.set("")
-			table.setItems(new FilteredList(FXCollections.observableArrayList(it)))
-			table.getSelectionModel().focus(0)
-		]
-		pathProperty.set(root)
 		addEventFilter(KeyEvent.ANY) [
 			if(#[KeyCode.RIGHT, KeyCode.LEFT].contains(getCode())) {
 				consume()
@@ -101,12 +90,14 @@ import static extension io.reactivex.rxjavafx.observables.JavaFxObservable.*
 			switch (getCode()) {
 				case KeyCode.ENTER,
 				case KeyCode.RIGHT: {
+					table.requestFocus()
 					val selected = Optional.ofNullable(table.getSelectionModel().getSelectedItem()).orElse(table.getItems().get(0))
 					if(!selected.isFile()) {
 						DuskCommander.eventBus.onNext(new FileBrowserSplit.Open())
 					}
 				}
 				case KeyCode.LEFT: {
+					table.requestFocus()
 					DuskCommander.eventBus.onNext(new FileBrowserSplit.Ascend())
 				}
 				case KeyCode.DOWN: {
@@ -148,7 +139,22 @@ import static extension io.reactivex.rxjavafx.observables.JavaFxObservable.*
 			}
 		]
 	}
-	
+
+	def navigateTo(File file) {
+		Observable.just(file).io().map [
+			listFiles().filter[!isHidden()]
+		].map [
+			sortBy[getName()]
+		].observeOn(JavaFxScheduler.platform()).doOnNext [
+			filterText.unbind()
+			filterText.set("")
+			table.setItems(new FilteredList(FXCollections.observableArrayList(it)))
+			table.getSelectionModel().select(0)
+			table.scrollTo(0)
+			pathProperty.set(file)
+		]
+	}
+
 	def hasFocusProperty() {
 		return focusedProperty().or(table.focusedProperty())
 	}

@@ -3,6 +3,7 @@ package com.sirolf2009.duskcommander.filebrowser
 import com.sirolf2009.duskcommander.DuskCommander
 import java.io.File
 import java.util.Optional
+import javafx.application.Platform
 import javafx.scene.control.SplitPane
 import org.eclipse.xtend.lib.annotations.Data
 
@@ -18,28 +19,42 @@ class FileBrowserSplit extends SplitPane {
 		right = new FileBrowserView(new File(System.getProperty("user.home")))
 		getItems().addAll(left, right)
 
-		DuskCommander.eventBus.type(NavigateTo).subscribe[getPrimary().pathProperty().set(getFile())]
-		DuskCommander.eventBus.type(NavigateToInOther).subscribe[getSecundary().pathProperty().set(getFile())]
+		DuskCommander.eventBus.type(NavigateTo).subscribe[getPrimary().navigateTo(getFile()).subscribe()]
+		DuskCommander.eventBus.type(NavigateToInOther).subscribe[getSecundary().navigateTo(getFile()).subscribe()]
 		DuskCommander.eventBus.type(SetSame).subscribe [
 			getSecundary().pathProperty().set(getPrimary().pathProperty().get())
 		]
 		DuskCommander.eventBus.type(Open).subscribe [
-			getPrimaryFile().ifPresent[getPrimary().navigateTo(it)]
+			getPrimaryFile().ifPresent[getPrimary().navigateTo(it).subscribe()]
 		]
 		DuskCommander.eventBus.type(OpenInOther).subscribe [
-			getPrimaryFile().ifPresent[getSecundary().navigateTo(it)]
+			getPrimaryFile().ifPresent[getSecundary().navigateTo(it).subscribe()]
 		]
 		DuskCommander.eventBus.type(OpenInBoth).subscribe [
 			getPrimaryFile().ifPresent [
-				getPrimary().navigateTo(it)
-				getSecundary().navigateTo(it)
+				getPrimary().navigateTo(it).subscribe()
+				getSecundary().navigateTo(it).subscribe()
 			]
 		]
 		DuskCommander.eventBus.type(Ascend).subscribe [
-			Optional.ofNullable(getPrimary().pathProperty().get().getParentFile()).ifPresent[getPrimary().navigateTo(it)]
+			getPrimary().ascend()
 		]
 		DuskCommander.eventBus.type(AscendInOther).subscribe [
-			Optional.ofNullable(getPrimary().pathProperty().get().getParentFile()).ifPresent[getSecundary().navigateTo(it)]
+			getSecundary().ascend()
+		]
+	}
+
+	def ascend(FileBrowserView browser) {
+		val current = browser.pathProperty().get()
+		Optional.ofNullable(current.getParentFile()).ifPresent [
+			browser.navigateTo(it).subscribe [ setup |
+				browser.getFileBrowser() => [
+					getSelectionModel().select(current)
+					Platform.runLater [
+						getTable().scrollTo(current)
+					]
+				]
+			]
 		]
 	}
 
@@ -50,11 +65,11 @@ class FileBrowserSplit extends SplitPane {
 	def getSecundaryFile() {
 		return getSecundary().getFile()
 	}
-	
+
 	def getFile(FileBrowserView fileBrowser) {
 		if(fileBrowser.getFileBrowser().getSelectionModel().getSelectedItem() !== null) {
 			return Optional.of(fileBrowser.getFileBrowser().getSelectionModel().getSelectedItem())
-		} else if (fileBrowser.getFileBrowser().getTable().getItems().size() > 0) {
+		} else if(fileBrowser.getFileBrowser().getTable().getItems().size() > 0) {
 			return Optional.of(fileBrowser.getFileBrowser().getTable().getItems().get(0))
 		} else {
 			return Optional.empty()
