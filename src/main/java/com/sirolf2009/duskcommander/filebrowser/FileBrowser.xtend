@@ -101,9 +101,7 @@ import static extension io.reactivex.rxjavafx.observables.JavaFxObservable.*
 			switch (getCode()) {
 				case KeyCode.ENTER,
 				case KeyCode.RIGHT: {
-					println("right")
 					val selected = Optional.ofNullable(table.getSelectionModel().getSelectedItem()).orElse(table.getItems().get(0))
-					println(selected+" "+table.getSelectionModel().getSelectedItem())
 					if(!selected.isFile()) {
 						DuskCommander.eventBus.onNext(new FileBrowserSplit.Open())
 					}
@@ -149,6 +147,10 @@ import static extension io.reactivex.rxjavafx.observables.JavaFxObservable.*
 				}
 			}
 		]
+	}
+	
+	def hasFocusProperty() {
+		return focusedProperty().or(table.focusedProperty())
 	}
 
 	def getSelectionModel() {

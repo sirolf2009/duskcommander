@@ -24,7 +24,6 @@ class FileBrowserSplit extends SplitPane {
 			getSecundary().pathProperty().set(getPrimary().pathProperty().get())
 		]
 		DuskCommander.eventBus.type(Open).subscribe [
-			println(getPrimaryFile())
 			getPrimaryFile().ifPresent[getPrimary().navigateTo(it)]
 		]
 		DuskCommander.eventBus.type(OpenInOther).subscribe [
@@ -63,10 +62,10 @@ class FileBrowserSplit extends SplitPane {
 	}
 
 	def getPrimary() {
-		if(left.isFocused() || left.getFileBrowser().isFocused()) {
+		if(left.hasFocusProperty().get()) {
 			return left
 		}
-		if(right.isFocused() || right.fileBrowser.isFocused()) {
+		if(right.hasFocusProperty().get()) {
 			return right
 		}
 		return left

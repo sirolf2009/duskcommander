@@ -101,12 +101,16 @@ import static extension io.reactivex.rxjavafx.observables.JavaFxObservable.*
 			], "wrap")
 			add(new Label("Focused"))
 			add(new Label() => [
-				textProperty().bind(fileBrowser.getTable().focusedProperty().asString())
+				textProperty().bind(fileBrowser.hasFocusProperty().asString())
 			])
 		]
 
 		getItems().addAll(new VBox(debugPanel, commandElements, pathElements, fileBrowser), terminal)
 		setDividerPositions(0.8)
+	}
+	
+	def hasFocusProperty() {
+		return focusedProperty().or(fileBrowser.hasFocusProperty())
 	}
 
 	def navigateTo(File file) {
