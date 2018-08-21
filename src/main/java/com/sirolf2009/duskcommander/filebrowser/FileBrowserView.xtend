@@ -143,7 +143,7 @@ import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
 	}
 
 	def fileBrowserButton(String name, String path) {
-		new PathButton(fileBrowser.getPathProperty(), name, path)
+		new PathButton(this, name, path)
 	}
 
 	@Data static class Setup {
