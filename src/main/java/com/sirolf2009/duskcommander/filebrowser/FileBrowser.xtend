@@ -6,6 +6,7 @@ import io.reactivex.rxjavafx.schedulers.JavaFxScheduler
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.attribute.PosixFilePermissions
+import java.util.Date
 import java.util.Optional
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
@@ -22,9 +23,10 @@ import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.AnchorPane
 import org.eclipse.xtend.lib.annotations.Accessors
-import tornadofx.SmartResize
 
 import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
+import static extension com.sirolf2009.util.LongExtensions.*
+import static extension com.sirolf2009.util.TimeUtil.*;
 
 @Accessors class FileBrowser extends AnchorPane {
 
@@ -36,10 +38,10 @@ import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
 		getStyleClass().add("background")
 		table = new TableView<File>()
 		table.setItems(FXCollections.emptyObservableList())
-		SmartResize.Companion.POLICY.requestResize(table)
 		getChildren().add(table)
 		table.maximize()
 		table.getColumns().add(new TableColumn<File, File>("Type") => [
+			prefWidthProperty().bind(table.widthProperty().multiply(0.08))
 			setCellValueFactory = [
 				new SimpleObjectProperty(getValue())
 			]
@@ -65,11 +67,31 @@ import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
 			]
 		])
 		table.getColumns().add(new TableColumn<File, String>("Name") => [
+			prefWidthProperty().bind(table.widthProperty().multiply(0.6))
 			setCellValueFactory = [
 				new SimpleStringProperty(getValue()?.getName())
 			]
 		])
+		table.getColumns().add(new TableColumn<File, String>("Size") => [
+			prefWidthProperty().bind(table.widthProperty().multiply(0.1))
+			setCellValueFactory = [
+				new SimpleStringProperty(Optional.ofNullable(getValue()).map [
+					if(isFile()) {
+						return length().humanReadableByteCount()
+					}
+				].orElse(null))
+			]
+		])
+		table.getColumns().add(new TableColumn<File, String>("Time") => [
+			prefWidthProperty().bind(table.widthProperty().multiply(0.1))
+			setCellValueFactory = [
+				new SimpleStringProperty(Optional.ofNullable(getValue()).map [
+					return new Date(lastModified()).format()
+				].orElse(null))
+			]
+		])
 		table.getColumns().add(new TableColumn<File, String>("Permissions") => [
+			prefWidthProperty().bind(table.widthProperty().multiply(0.12))
 			setCellValueFactory = [
 				new SimpleStringProperty(Optional.ofNullable(getValue()).map [
 					try {
