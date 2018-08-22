@@ -12,6 +12,7 @@ class PathButton extends Button {
 	new(FileBrowserView browser, String name, String path) {
 		setText(name)
 		val file = new File(path)
+		getStyleClass().add("path-button")
 		actionEventsOf(this).platform().subscribe[
 			browser.navigateTo(file).subscribe()
 		]

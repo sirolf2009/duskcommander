@@ -49,7 +49,7 @@ import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
 		terminal.onTerminalFxReady[terminal.command("cd " + root + "\n")]
 
 		pathElements = new HBox() => [
-			getStyleClass().add("background")
+			getStyleClass().addAll("background", "path-buttons")
 		]
 		commandElements = new HBox() => [
 			getStyleClass().add("background")
@@ -86,9 +86,37 @@ import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
 	def hasFocusProperty() {
 		return focusedProperty().or(fileBrowser.hasFocusProperty())
 	}
+	
+	def refresh() {
+		Observable.zip(fileBrowser.refresh, commands(fileBrowser.getPathProperty().get())) [f, c|
+			return new Refresh(f, c)
+		]
+	}
 
 	def navigateTo(File file) {
-		val commands = Observable.just(file).platform().doOnNext [
+		Observable.zip(fileBrowser.navigateTo(file), commands(file), pathButtons(file)) [f, c, b|
+			return new Setup(f, c, b)
+		]
+	}
+	
+	def private pathButtons(File file) {
+		Observable.just(file).platform().doOnNext [
+			getButtons().clear()
+			terminal.getOutputWriter()?.append("cd " + it + "\n")?.flush()
+		].computation().map [
+			val path = toPath()
+			#[fileBrowserButton("/", "/")] + (0 ..< path.size()).map[
+				path.get(it).toString() -> "/"+(0 .. it).map[
+					path.get(it).toString()+"/"
+				].reduce[a,b|a+b]
+			].map[fileBrowserButton(key+"/", value)]
+		].map[toList()].platform().doOnNext [
+			getButtons().addAll(it)
+		]
+	}
+	
+	def private commands(File file) {
+		Observable.just(file).platform().doOnNext [
 			getCommands().clear()
 			clearFilter()
 		].computation().flatMap [
@@ -100,22 +128,6 @@ import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
 		].platform().doOnNext [
 			getCommands().addAll(it)
 		].single(#[]).toObservable()
-		val buttons = Observable.just(file).platform().doOnNext [
-			getButtons().clear()
-			terminal.getOutputWriter()?.append("cd " + it + "\n")?.flush()
-		].computation().map [
-			val path = toPath()
-			#[fileBrowserButton("/", "/")] + (0 ..< path.size()).map[
-				path.get(it).toString() -> "/"+(0 .. it).map[
-					path.get(it).toString()+"/"
-				].reduce[a,b|a+b]
-			].map[fileBrowserButton(key, value)]
-		].map[toList()].platform().doOnNext [
-			getButtons().addAll(it)
-		]
-		Observable.zip(fileBrowser.navigateTo(file), commands, buttons) [f, c, b|
-			return new Setup(f, c, b)
-		]
 	}
 	
 
@@ -150,5 +162,9 @@ import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
 		List<File> files
 		List<ActionButton> commands
 		List<PathButton> path
+	}
+	@Data static class Refresh {
+		List<File> files
+		List<ActionButton> commands
 	}
 }

@@ -161,6 +161,16 @@ import static extension com.sirolf2009.util.TimeUtil.*;
 			}
 		]
 	}
+	
+	def refresh() {
+		val current = table.getSelectionModel().getSelectedItem()
+		navigateTo(pathProperty.get()).doOnNext[
+			if(current !== null) {
+				table.getSelectionModel().select(current)
+				table.scrollTo(current)
+			}
+		]
+	}
 
 	def navigateTo(File file) {
 		Observable.just(file).io().map [
