@@ -123,7 +123,7 @@ import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
 			Observable.fromArray(listFiles())
 		].filter[isFile() && getName().equals(".duskcommander")].map [
 			Files.lines(toPath()).filter[!startsWith("#")].map[split(":")].map [
-				new ActionButton(terminal, get(0), (1 ..< size()).map[index|get(index)].reduce[a, b|a + b])
+				new ActionButton(terminal, get(0), (1 ..< size()).map[index|get(index)].reduce[a, b|a + ":" + b])
 			].collect(Collectors.toList())
 		].platform().doOnNext [
 			getCommands().addAll(it)
