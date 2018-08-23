@@ -50,6 +50,18 @@ class DuskCommander extends Application {
 					getItems().add(reload)
 				]
 			])
+		], new Menu("_Go") => [
+			getItems().add(commandMenuItem("Set Same", new FileBrowserSplit.SetSame()))
+			getItems().add(commandMenuItem("Open", new FileBrowserSplit.Open()))
+			getItems().add(commandMenuItem("Open In Other", new FileBrowserSplit.OpenInOther()))
+			getItems().add(commandMenuItem("Open In Both", new FileBrowserSplit.OpenInBoth()))
+			getItems().add(commandMenuItem("Ascend", new FileBrowserSplit.Ascend()))
+			getItems().add(commandMenuItem("Ascend In Other", new FileBrowserSplit.AscendInOther()))
+			getItems().add(commandMenuItem("Refresh", new FileBrowserSplit.Refresh()))
+			getItems().add(new SeparatorMenuItem())
+			getItems().add(commandMenuItem("Copy", new FileBrowserSplit.Copy()))
+			getItems().add(commandMenuItem("Move", new FileBrowserSplit.Move()))
+			getItems().add(commandMenuItem("Delete", new FileBrowserSplit.Delete()))
 		]))
 		root.setCenter(new FileBrowserSplit())
 		val scene = new Scene(root, 1200, 600)
@@ -60,6 +72,14 @@ class DuskCommander extends Application {
 		primaryStage.setOnCloseRequest[System.exit(0)]
 		primaryStage.setScene(scene)
 		primaryStage.show()
+	}
+	
+	def static commandMenuItem(String name, Object command) {
+		return new MenuItem(name) => [
+			setOnAction = [
+				eventBus.onNext(command)
+			]
+		]
 	}
 
 	def private static getBookmarks() {
