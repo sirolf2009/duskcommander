@@ -23,6 +23,7 @@ import org.tbee.javafx.scene.layout.MigPane
 
 import static extension com.sirolf2009.duskcommander.util.PathExtensions.*
 import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
+import com.pastdev.jsch.nio.file.UnixSshFileSystem
 
 @Accessors class FileBrowserView extends SplitPane {
 
@@ -60,7 +61,7 @@ import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
 				}
 			}
 		]
-		
+
 		val debugPanel = new MigPane("fillx", "[right]rel[grow,fill]", "[]10[]") => [
 			getStyleClass().add("debug-panel")
 			managedProperty().bind(DuskCommander.debugProperty)
@@ -76,48 +77,55 @@ import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
 
 		getItems().addAll(new VBox(debugPanel, commandElements, pathElements, fileBrowser), terminal)
 		setDividerPositions(0.8)
-		
+
 		navigateTo(root).subscribe()
 	}
-	
+
 	def hasFocusProperty() {
 		return focusedProperty().or(fileBrowser.hasFocusProperty())
 	}
-	
+
 	def refresh() {
-		Observable.zip(fileBrowser.refresh, commands(fileBrowser.getPathProperty().get())) [p, c|
+		Observable.zip(fileBrowser.refresh, commands(fileBrowser.getPathProperty().get())) [ p, c |
 			return new Refresh(p, c)
 		]
 	}
 
 	def navigateTo(Path file) {
-		Observable.zip(fileBrowser.navigateTo(file), commands(file), pathButtons(file)) [p, c, b|
+		Observable.zip(fileBrowser.navigateTo(file), commands(file), pathButtons(file)) [ p, c, b |
 			return new Setup(p, c, b)
 		]
 	}
-	
+
 	def private pathButtons(Path file) {
 		Observable.just(file).platform().doOnNext [
 			getButtons().clear()
-			terminal.getOutputWriter()?.append("cd " + it + "\n")?.flush()
-		].computation().map [path|
-			#[fileBrowserButton("/", path.resolve("/"))] + (0 ..< path.size()).map[
-				path.get(it).toString() -> "/"+(0 .. it).map[
-					path.get(it).toString()+"/"
-				].reduce[a,b|a+b]
-			].map[fileBrowserButton(key+"/", path.resolve(value))]
+			if(getFileSystem() instanceof UnixSshFileSystem) {
+				val uri = (getFileSystem() as UnixSshFileSystem).getUri()
+				val user = uri.getUserInfo()
+				val host = uri.getHost()
+				terminal.getOutputWriter()?.append('''ssh «user»@«host»''' + "\n")?.flush()
+			} else {
+				terminal.getOutputWriter()?.append("cd " + it + "\n")?.flush()
+			}
+		].computation().map [ path |
+			#[fileBrowserButton("/", path.resolve("/"))] + (0 ..< path.size()).map [
+				path.get(it).toString() -> "/" + (0 .. it).map [
+					path.get(it).toString() + "/"
+				].reduce[a, b|a + b]
+			].map[fileBrowserButton(key + "/", path.resolve(value))]
 		].map[toList()].platform().doOnNext [
 			getButtons().addAll(it)
 		]
 	}
-	
+
 	def private commands(Path file) {
 		Observable.just(file).platform().doOnNext [
 			getCommands().clear()
 			clearFilter()
 		].computation().flatMap [
 			list()
-		].filter[
+		].filter [
 			isFile() && getName().equals(".duskcommander")
 		].map [
 			Files.lines(it).filter[!startsWith("#")].map[split(":")].map [
@@ -127,7 +135,6 @@ import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
 			getCommands().addAll(it)
 		].single(#[]).toObservable()
 	}
-	
 
 	def pathProperty() {
 		return fileBrowser.getPathProperty()
@@ -161,6 +168,7 @@ import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
 		List<ActionButton> commands
 		List<PathButton> path
 	}
+
 	@Data static class Refresh {
 		List<Path> files
 		List<ActionButton> commands

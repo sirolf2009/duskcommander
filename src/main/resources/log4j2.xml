@@ -8,7 +8,7 @@
         </GELF>
     </Appenders>
     <Loggers>
-        <Root level="INFO">
+        <Root level="TRACE">
             <AppenderRef ref="STDOUT"/>
             <AppenderRef ref="gelfAppender"/>
         </Root>

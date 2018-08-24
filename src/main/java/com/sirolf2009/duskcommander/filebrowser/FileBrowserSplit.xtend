@@ -5,8 +5,8 @@ import com.sirolf2009.duskcommander.filebrowser.dialog.CopyDialog
 import com.sirolf2009.duskcommander.filebrowser.dialog.DeleteDialog
 import com.sirolf2009.duskcommander.filebrowser.dialog.MoveDialog
 import io.reactivex.Observable
-import java.io.File
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.Optional
 import javafx.application.Platform
@@ -28,10 +28,10 @@ class FileBrowserSplit extends SplitPane {
 		right = new FileBrowserView(Paths.get(System.getProperty("user.home")))
 		getItems().addAll(left, right)
 
-		DuskCommander.eventBus.type(NavigateTo).subscribe[getPrimary().navigateTo(getFile().toPath()).subscribe()]
-		DuskCommander.eventBus.type(NavigateToInOther).subscribe[getSecundary().navigateTo(getFile().toPath()).subscribe()]
+		DuskCommander.eventBus.type(NavigateTo).subscribe[getPrimary().navigateTo(getPath()).subscribe()]
+		DuskCommander.eventBus.type(NavigateToInOther).subscribe[getSecundary().navigateTo(getPath()).subscribe()]
 		DuskCommander.eventBus.type(SetSame).subscribe [
-			getSecundary().pathProperty().set(getPrimary().pathProperty().get())
+			getSecundary().navigateTo(getPrimary().pathProperty().get())
 		]
 		DuskCommander.eventBus.type(Open).subscribe [
 			getPrimaryFile().ifPresent[getPrimary().navigateTo(it).subscribe()]
@@ -165,11 +165,11 @@ class FileBrowserSplit extends SplitPane {
 	}
 
 	@Data static class NavigateTo {
-		val File file
+		val Path path
 	}
 
 	@Data static class NavigateToInOther {
-		val File file
+		val Path path
 	}
 
 	@Data static class SetSame {

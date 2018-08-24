@@ -80,7 +80,7 @@ import static extension com.sirolf2009.util.TimeUtil.*
 			setCellValueFactory = [
 				new SimpleStringProperty(Optional.ofNullable(getValue()).map [
 					if(isFile()) {
-						return size().humanReadableByteCount()
+						return Files.size(it).humanReadableByteCount()
 					}
 				].orElse(null))
 			]
@@ -89,7 +89,11 @@ import static extension com.sirolf2009.util.TimeUtil.*
 			prefWidthProperty().bind(table.widthProperty().multiply(0.1))
 			setCellValueFactory = [
 				new SimpleStringProperty(Optional.ofNullable(getValue()).map [
-					return new Date(getLastModifiedTime()).format()
+					try {
+						return new Date(getLastModifiedTime()).format()
+					} catch(Exception e) {
+						return null
+					}
 				].orElse(null))
 			]
 		])
