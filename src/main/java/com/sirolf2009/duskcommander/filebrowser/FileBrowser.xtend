@@ -1,6 +1,7 @@
 package com.sirolf2009.duskcommander.filebrowser
 
 import com.sirolf2009.duskcommander.DuskCommander
+import com.sirolf2009.duskcommander.filebrowser.FileBrowserSplit.Open
 import io.reactivex.Observable
 import io.reactivex.rxjavafx.schedulers.JavaFxScheduler
 import java.nio.file.Files
@@ -16,6 +17,7 @@ import javafx.collections.transformation.FilteredList
 import javafx.scene.Node
 import javafx.scene.control.TableCell
 import javafx.scene.control.TableColumn
+import javafx.scene.control.TableRow
 import javafx.scene.control.TableView
 import javafx.scene.control.TextField
 import javafx.scene.image.Image
@@ -43,6 +45,16 @@ import static extension com.sirolf2009.util.TimeUtil.*
 		table.setItems(FXCollections.emptyObservableList())
 		getChildren().add(table)
 		table.maximize()
+		table.setRowFactory = [
+			return new TableRow<Path>() => [
+				setOnMouseClicked = [evt|
+					if(evt.getClickCount() == 2 && !isEmpty()) {
+						DuskCommander.eventBus.onNext(new Open())
+					}
+				]
+			]
+		]
+		
 		table.getColumns().add(new TableColumn<Path, Path>("Type") => [
 			prefWidthProperty().bind(table.widthProperty().multiply(0.08))
 			setCellValueFactory = [
