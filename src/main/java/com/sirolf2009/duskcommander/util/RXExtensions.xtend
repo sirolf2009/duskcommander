@@ -1,11 +1,21 @@
 package com.sirolf2009.duskcommander.util
 
 import io.reactivex.Observable
-import io.reactivex.schedulers.Schedulers
-import io.reactivex.rxjavafx.schedulers.JavaFxScheduler
 import io.reactivex.Single
+import io.reactivex.rxjavafx.schedulers.JavaFxScheduler
+import io.reactivex.schedulers.Schedulers
+import java.util.Optional
 
 class RXExtensions {
+	
+	def static <T> Observable<T> fromOptional(Optional<T> opt) {
+		return Observable.create[
+			if(opt.isPresent()) {
+				onNext(opt.get())
+			}
+			onComplete()
+		]
+	}
 	
 	def static <T> type(Observable<?> observable, Class<T> type) {
 //		return observable.filter[type.isAssignableFrom(getClass())].cast(type)

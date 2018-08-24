@@ -4,8 +4,8 @@ import com.kodedu.terminalfx.Terminal
 import com.kodedu.terminalfx.config.TerminalConfig
 import com.sirolf2009.duskcommander.DuskCommander
 import io.reactivex.Observable
-import java.io.File
 import java.nio.file.Files
+import java.nio.file.Path
 import java.util.List
 import java.util.stream.Collectors
 import javafx.geometry.Orientation
@@ -21,6 +21,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend.lib.annotations.Data
 import org.tbee.javafx.scene.layout.MigPane
 
+import static extension com.sirolf2009.duskcommander.util.PathExtensions.*
 import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
 
 @Accessors class FileBrowserView extends SplitPane {
@@ -30,11 +31,7 @@ import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
 	val FileBrowser fileBrowser
 	val Terminal terminal
 
-	new() {
-		this(new File("."))
-	}
-
-	new(File root) {
+	new(Path root) {
 		setOrientation(Orientation.VERTICAL)
 		fileBrowser = new FileBrowser()
 		VBox.setVgrow(fileBrowser, Priority.ALWAYS)
@@ -88,41 +85,42 @@ import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
 	}
 	
 	def refresh() {
-		Observable.zip(fileBrowser.refresh, commands(fileBrowser.getPathProperty().get())) [f, c|
-			return new Refresh(f, c)
+		Observable.zip(fileBrowser.refresh, commands(fileBrowser.getPathProperty().get())) [p, c|
+			return new Refresh(p, c)
 		]
 	}
 
-	def navigateTo(File file) {
-		Observable.zip(fileBrowser.navigateTo(file), commands(file), pathButtons(file)) [f, c, b|
-			return new Setup(f, c, b)
+	def navigateTo(Path file) {
+		Observable.zip(fileBrowser.navigateTo(file), commands(file), pathButtons(file)) [p, c, b|
+			return new Setup(p, c, b)
 		]
 	}
 	
-	def private pathButtons(File file) {
+	def private pathButtons(Path file) {
 		Observable.just(file).platform().doOnNext [
 			getButtons().clear()
 			terminal.getOutputWriter()?.append("cd " + it + "\n")?.flush()
-		].computation().map [
-			val path = toPath()
-			#[fileBrowserButton("/", "/")] + (0 ..< path.size()).map[
+		].computation().map [path|
+			#[fileBrowserButton("/", path.resolve("/"))] + (0 ..< path.size()).map[
 				path.get(it).toString() -> "/"+(0 .. it).map[
 					path.get(it).toString()+"/"
 				].reduce[a,b|a+b]
-			].map[fileBrowserButton(key+"/", value)]
+			].map[fileBrowserButton(key+"/", path.resolve(value))]
 		].map[toList()].platform().doOnNext [
 			getButtons().addAll(it)
 		]
 	}
 	
-	def private commands(File file) {
+	def private commands(Path file) {
 		Observable.just(file).platform().doOnNext [
 			getCommands().clear()
 			clearFilter()
 		].computation().flatMap [
-			Observable.fromArray(listFiles())
-		].filter[isFile() && getName().equals(".duskcommander")].map [
-			Files.lines(toPath()).filter[!startsWith("#")].map[split(":")].map [
+			list()
+		].filter[
+			isFile() && getName().equals(".duskcommander")
+		].map [
+			Files.lines(it).filter[!startsWith("#")].map[split(":")].map [
 				new ActionButton(terminal, get(0), (1 ..< size()).map[index|get(index)].reduce[a, b|a + ":" + b])
 			].collect(Collectors.toList())
 		].platform().doOnNext [
@@ -154,17 +152,17 @@ import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
 		pathElements.getChildren()
 	}
 
-	def fileBrowserButton(String name, String path) {
+	def fileBrowserButton(String name, Path path) {
 		new PathButton(this, name, path)
 	}
 
 	@Data static class Setup {
-		List<File> files
+		List<Path> files
 		List<ActionButton> commands
 		List<PathButton> path
 	}
 	@Data static class Refresh {
-		List<File> files
+		List<Path> files
 		List<ActionButton> commands
 	}
 }

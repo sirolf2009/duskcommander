@@ -1,22 +1,22 @@
 package com.sirolf2009.duskcommander.filebrowser.dialog
 
 import com.sirolf2009.duskcommander.DuskDialog
-import java.io.File
+import java.nio.file.Path
 import javafx.scene.control.ButtonBar.ButtonData
 import javafx.scene.control.ButtonType
 import javafx.scene.control.Label
 import javafx.scene.control.TextField
 
-class CopyDialog extends DuskDialog<Pair<File, File>> {
+class CopyDialog extends DuskDialog<Pair<Path, Path>> {
 
 	val TextField txtFrom
 	val TextField txtTo
 
-	new(File from, File to) {
+	new(Path from, Path to) {
 		setTitle("Copy Dialog")
 		getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL)
-		txtFrom = new TextField(from.getAbsolutePath())
-		txtTo = new TextField(to.getAbsolutePath())
+		txtFrom = new TextField(from.toString())
+		txtTo = new TextField(to.toString())
 		getDialogPane().setContent(formMigLayout() => [
 			add(new Label("From"))
 			add(txtFrom, "wrap")
@@ -25,7 +25,7 @@ class CopyDialog extends DuskDialog<Pair<File, File>> {
 		])
 		setResultConverter = [
 			if(getButtonData() == ButtonData.OK_DONE) {
-				return new File(txtFrom.getText()) -> new File(txtTo.getText())
+				return from.resolve(txtFrom.getText()) -> to.resolve(txtTo.getText())
 			}
 		]
 	}

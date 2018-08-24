@@ -6,14 +6,16 @@ import com.sirolf2009.duskcommander.filebrowser.dialog.DeleteDialog
 import com.sirolf2009.duskcommander.filebrowser.dialog.MoveDialog
 import io.reactivex.Observable
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Paths
 import java.util.Optional
 import javafx.application.Platform
 import javafx.scene.control.SplitPane
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
-import org.apache.commons.io.FileUtils
 import org.eclipse.xtend.lib.annotations.Data
 
+import static extension com.sirolf2009.duskcommander.util.PathExtensions.*
 import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
 
 class FileBrowserSplit extends SplitPane {
@@ -22,12 +24,12 @@ class FileBrowserSplit extends SplitPane {
 	val FileBrowserView right
 
 	new() {
-		left = new FileBrowserView(new File(System.getProperty("user.home")))
-		right = new FileBrowserView(new File(System.getProperty("user.home")))
+		left = new FileBrowserView(Paths.get(System.getProperty("user.home")))
+		right = new FileBrowserView(Paths.get(System.getProperty("user.home")))
 		getItems().addAll(left, right)
 
-		DuskCommander.eventBus.type(NavigateTo).subscribe[getPrimary().navigateTo(getFile()).subscribe()]
-		DuskCommander.eventBus.type(NavigateToInOther).subscribe[getSecundary().navigateTo(getFile()).subscribe()]
+		DuskCommander.eventBus.type(NavigateTo).subscribe[getPrimary().navigateTo(getFile().toPath()).subscribe()]
+		DuskCommander.eventBus.type(NavigateToInOther).subscribe[getSecundary().navigateTo(getFile().toPath()).subscribe()]
 		DuskCommander.eventBus.type(SetSame).subscribe [
 			getSecundary().pathProperty().set(getPrimary().pathProperty().get())
 		]
@@ -54,48 +56,32 @@ class FileBrowserSplit extends SplitPane {
 			refresh().subscribe()
 		]
 
-		DuskCommander.eventBus.type(Copy).subscribe [
-			getPrimaryFile().ifPresent [
-				val destination = new File(getSecundary().pathProperty().get(), getName())
-				new CopyDialog(it, destination).showAndWait().ifPresent [
-					if(getKey().isFile() && getValue().isFile()) {
-						FileUtils.copyFile(getKey(), getValue())
-					} else if(getKey().isFile() && !getValue().isFile()) {
-						FileUtils.copyFileToDirectory(getKey(), getValue())
-					} else if(!getKey().isFile() && !getValue().isFile()) {
-						FileUtils.copyDirectory(getKey(), getValue())
-					}
-					refresh().subscribe()
-				]
+		DuskCommander.eventBus.type(Copy).getPrimaryFile().subscribe [
+			val destination = getSecundary().pathProperty().get().resolve(getName())
+			val dialogResult = new CopyDialog(it, destination).showAndWait()
+			dialogResult.fromOptional().doOnNext [
+				Files.copy(getKey(), getValue()) // TODO CopyOption in dialog
+			].subscribe [
+				refresh().subscribe()
 			]
 		]
 
-		DuskCommander.eventBus.type(Move).subscribe [
-			getPrimaryFile().ifPresent [
-				val destination = new File(getSecundary().pathProperty().get(), getName())
-				new MoveDialog(it, destination).showAndWait().ifPresent [
-					if(getKey().isFile() && getValue().isFile()) {
-						FileUtils.moveFile(getKey(), getValue())
-					} else if(getKey().isFile() && !getValue().isFile()) {
-						FileUtils.moveFileToDirectory(getKey(), getValue(), false)
-					} else if(!getKey().isFile() && !getValue().isFile()) {
-						FileUtils.moveDirectory(getKey(), getValue())
-					}
-					refresh().subscribe()
-				]
+		DuskCommander.eventBus.type(Move).getPrimaryFile().subscribe [
+			val destination = getSecundary().pathProperty().get().resolve(getName())
+			val dialogResult = new MoveDialog(it, destination).showAndWait()
+			dialogResult.fromOptional().doOnNext [
+				Files.move(getKey(), getValue()) // TODO CopyOption in dialog
+			].subscribe [
+				refresh().subscribe()
 			]
 		]
 
-		DuskCommander.eventBus.type(Delete).subscribe [
-			getPrimaryFile().ifPresent [
-				new DeleteDialog(it).showAndWait().ifPresent [
-					if(isFile()) {
-						delete()
-					} else {
-						FileUtils.deleteDirectory(it)
-					}
-					refresh().subscribe()
-				]
+		DuskCommander.eventBus.type(Delete).getPrimaryFile().subscribe [
+			val dialogResult = new DeleteDialog(it).showAndWait()
+			dialogResult.fromOptional().doOnNext [
+				delete()
+			].subscribe [
+				refresh().subscribe()
 			]
 		]
 
@@ -119,7 +105,7 @@ class FileBrowserSplit extends SplitPane {
 
 	def ascend(FileBrowserView browser) {
 		val current = browser.pathProperty().get()
-		Optional.ofNullable(current.getParentFile()).ifPresent [
+		Optional.ofNullable(current.getParent()).ifPresent [
 			browser.navigateTo(it).subscribe [ setup |
 				browser.getFileBrowser() => [
 					getSelectionModel().select(current)
@@ -135,8 +121,16 @@ class FileBrowserSplit extends SplitPane {
 		Observable.concat(left.refresh(), right.refresh())
 	}
 
+	def getPrimaryFile(Observable<?> obs) {
+		return obs.map[getPrimaryFile()].filter[isPresent()].map[get()]
+	}
+
 	def getPrimaryFile() {
 		return getPrimary().getFile()
+	}
+
+	def getSecundaryFile(Observable<?> obs) {
+		return obs.map[getSecundaryFile()].filter[isPresent()].map[get()]
 	}
 
 	def getSecundaryFile() {
