@@ -112,6 +112,16 @@
 			<artifactId>jsch</artifactId>
 			<version>0.1.54</version>
 		</dependency>
+		<dependency>
+			<groupId>org.pf4j</groupId>
+			<artifactId>pf4j</artifactId>
+			<version>2.4.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.pf4j</groupId>
+			<artifactId>pf4j-update</artifactId>
+			<version>2.0.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -134,6 +144,13 @@
 					<outputDirectory>${project.build.directory}/xtend-gen/main</outputDirectory>
 					<testOutputDirectory>${project.build.directory}/xtend-gen/test</testOutputDirectory>
 				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>org.eclipse.platform</groupId>
+						<artifactId>org.eclipse.equinox.common</artifactId>
+						<version>3.10.0</version>
+					</dependency>
+				</dependencies>
 			</plugin>
 
 			<plugin>
@@ -150,7 +167,7 @@
 				<version>8.1.5</version>
 				<configuration>
 
-					<mainClass>com.sirolf2009.duskcommander.MainApp</mainClass>
+					<mainClass>com.sirolf2009.duskcommander.DuskCommander</mainClass>
 
 					<!-- only required if signing the jar file -->
 					<keyStoreAlias>example-user</keyStoreAlias>

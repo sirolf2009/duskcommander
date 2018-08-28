@@ -34,7 +34,13 @@ class FileBrowserSplit extends SplitPane {
 			getSecundary().navigateTo(getPrimary().pathProperty().get())
 		]
 		DuskCommander.eventBus.type(Open).subscribe [
-			getPrimaryFile().ifPresent[getPrimary().navigateTo(it).subscribe()]
+			getPrimaryFile().ifPresent [
+				if(isFile()) {
+					getPrimary().getTerminal().command('''xdg-open «toAbsolutePath()»'''+"\n")
+				} else {
+					getPrimary().navigateTo(it).subscribe()
+				}
+			]
 		]
 		DuskCommander.eventBus.type(OpenInOther).subscribe [
 			getPrimaryFile().ifPresent[getSecundary().navigateTo(it).subscribe()]

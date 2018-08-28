@@ -212,7 +212,7 @@ import static extension com.sirolf2009.util.TimeUtil.*
 	}
 
 	def static getName(Path path) {
-		return path.getName(path.getNameCount() - 1).toString()
+		return path.getFileName().toString()
 	}
 
 	def hasFocusProperty() {
