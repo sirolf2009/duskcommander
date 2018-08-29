@@ -13,24 +13,16 @@ import javafx.collections.FXCollections
 import javafx.collections.ObservableMap
 import javafx.scene.control.MenuItem
 import org.pf4j.Extension
-import org.pf4j.Plugin
-import org.pf4j.PluginWrapper
 
 import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
 
-class SSHFileSystemPlugin extends Plugin {
+@Extension
+class SSHFileSystemPlugin implements FileSystemExtensionPoint {
 	
 	public static val ObservableMap<URI, FileSystem> fileSystemMap = FXCollections.observableHashMap()
 	
-	new(PluginWrapper wrapper) {
-		super(wrapper)
-	}
-	
-	@Extension
-	static class SSHFileSystem implements FileSystemExtensionPoint {
-		
-		override getMenuItem() {
-			return new MenuItem("SSH") => [
+	override getMenuItem() {
+		return new MenuItem("SSH") => [
 				onAction = [
 					new ConnectionDialog().showAndWait().fromOptional().io().map [
 						val uri = new URI('''ssh.unix://«user»@«host»:22/''');
@@ -51,8 +43,6 @@ class SSHFileSystemPlugin extends Plugin {
 					]
 				]
 			]
-		}
-		
 	}
 	
 }

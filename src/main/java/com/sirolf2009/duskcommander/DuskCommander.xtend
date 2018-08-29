@@ -1,6 +1,8 @@
 package com.sirolf2009.duskcommander;
 
+import com.sirolf2009.duskcommander.extensionpoint.FileExtensionPoint
 import com.sirolf2009.duskcommander.extensionpoint.FileSystemExtensionPoint
+import com.sirolf2009.duskcommander.extensionpoint.ViewExtensionPoint
 import com.sirolf2009.duskcommander.filebrowser.FileBrowserSplit
 import com.sirolf2009.duskcommander.filebrowser.FileBrowserSplit.NavigateTo
 import io.reactivex.subjects.PublishSubject
@@ -23,8 +25,6 @@ import javafx.scene.input.KeyCombination
 import javafx.scene.layout.BorderPane
 import javafx.stage.Stage
 import org.pf4j.DefaultPluginManager
-import com.sirolf2009.duskcommander.extensionpoint.ViewExtensionPoint
-import com.sirolf2009.duskcommander.extensionpoint.FileExtensionPoint
 
 class DuskCommander extends Application {
 
@@ -38,9 +38,7 @@ class DuskCommander extends Application {
 
 	override start(Stage primaryStage) throws Exception {
 		val pluginManager = new DefaultPluginManager()
-		pluginManager.loadPlugins()
-		pluginManager.startPlugins()
-		
+				
 		val root = new BorderPane()
 		root.getStyleClass().add("background")
 
