@@ -148,7 +148,7 @@ import static extension com.sirolf2009.util.TimeUtil.*
 					table.requestFocus()
 				}
 				default: {
-					if(getCode().isLetterKey()) {
+					if(getCode().isLetterKey() && !isControlDown()) {
 						if(filterText.get().isEmpty()) {
 							val textField = new TextField(getText())
 							filterText.bind(textField.textProperty())

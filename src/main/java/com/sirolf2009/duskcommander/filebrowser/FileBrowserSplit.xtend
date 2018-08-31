@@ -1,5 +1,6 @@
 package com.sirolf2009.duskcommander.filebrowser
 
+import com.sirolf2009.duskcommander.Command
 import com.sirolf2009.duskcommander.DuskCommander
 import com.sirolf2009.duskcommander.filebrowser.dialog.CopyDialog
 import com.sirolf2009.duskcommander.filebrowser.dialog.DeleteDialog
@@ -13,7 +14,8 @@ import javafx.application.Platform
 import javafx.scene.control.SplitPane
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
-import org.eclipse.xtend.lib.annotations.Data
+import org.eclipse.xtend.lib.annotations.Accessors
+import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 
 import static extension com.sirolf2009.duskcommander.util.PathExtensions.*
 import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
@@ -28,15 +30,27 @@ class FileBrowserSplit extends SplitPane {
 		right = new FileBrowserView(Paths.get(System.getProperty("user.home")))
 		getItems().addAll(left, right)
 
+		DuskCommander.eventBus.type(ToggleSecundary).subscribe [
+			if(getItems().contains(getSecundary())) {
+				getItems().remove(getSecundary())
+			} else {
+				getItems().add(getSecundary())
+			}
+		]
 		DuskCommander.eventBus.type(NavigateTo).subscribe[getPrimary().navigateTo(getPath()).subscribe()]
 		DuskCommander.eventBus.type(NavigateToInOther).subscribe[getSecundary().navigateTo(getPath()).subscribe()]
 		DuskCommander.eventBus.type(SetSame).subscribe [
-			getSecundary().navigateTo(getPrimary().pathProperty().get())
+			getSecundary().navigateTo(getPrimary().pathProperty().get()).subscribe()
+		]
+		DuskCommander.eventBus.type(Swap).subscribe [
+			val secundary = getSecundary().pathProperty().get()
+			getSecundary().navigateTo(getPrimary().pathProperty().get()).subscribe()
+			getPrimary().navigateTo(secundary).subscribe()
 		]
 		DuskCommander.eventBus.type(Open).subscribe [
 			getPrimaryFile().ifPresent [
 				if(isFile()) {
-					getPrimary().getTerminal().command('''xdg-open «toAbsolutePath()»'''+"\n")
+					getPrimary().getTerminal().command('''xdg-open «toAbsolutePath()»''' + "\n")
 				} else {
 					getPrimary().navigateTo(it).subscribe()
 				}
@@ -170,42 +184,48 @@ class FileBrowserSplit extends SplitPane {
 		return left
 	}
 
-	@Data static class NavigateTo {
+	static class ToggleSecundary extends Command {
+	}
+
+	@FinalFieldsConstructor @Accessors static class NavigateTo extends Command {
 		val Path path
 	}
 
-	@Data static class NavigateToInOther {
+	@FinalFieldsConstructor @Accessors static class NavigateToInOther extends Command {
 		val Path path
 	}
 
-	@Data static class SetSame {
+	static class SetSame extends Command {
 	}
 
-	@Data static class Open {
+	static class Swap extends Command {
 	}
 
-	@Data static class OpenInOther {
+	static class Open extends Command {
 	}
 
-	@Data static class OpenInBoth {
+	static class OpenInOther extends Command {
 	}
 
-	@Data static class Ascend {
+	static class OpenInBoth extends Command {
 	}
 
-	@Data static class AscendInOther {
+	static class Ascend extends Command {
 	}
 
-	@Data static class Refresh {
+	static class AscendInOther extends Command {
 	}
 
-	@Data static class Copy {
+	static class Refresh extends Command {
 	}
 
-	@Data static class Move {
+	static class Copy extends Command {
 	}
 
-	@Data static class Delete {
+	static class Move extends Command {
+	}
+
+	static class Delete extends Command {
 	}
 
 }
