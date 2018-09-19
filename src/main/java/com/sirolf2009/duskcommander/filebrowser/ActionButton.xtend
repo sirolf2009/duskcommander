@@ -1,6 +1,6 @@
 package com.sirolf2009.duskcommander.filebrowser
 
-import com.kodedu.terminalfx.Terminal
+import com.sirolf2009.javafxterminal.Terminal
 import javafx.scene.control.Button
 
 import static io.reactivex.rxjavafx.observables.JavaFxObservable.*

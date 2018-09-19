@@ -1,8 +1,8 @@
 package com.sirolf2009.duskcommander.filebrowser
 
-import com.kodedu.terminalfx.Terminal
-import com.kodedu.terminalfx.config.TerminalConfig
+import com.pastdev.jsch.nio.file.UnixSshFileSystem
 import com.sirolf2009.duskcommander.DuskCommander
+import com.sirolf2009.javafxterminal.Terminal
 import io.reactivex.Observable
 import java.nio.file.Files
 import java.nio.file.Path
@@ -16,14 +16,12 @@ import javafx.scene.input.KeyEvent
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
-import javafx.scene.paint.Color
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend.lib.annotations.Data
 import org.tbee.javafx.scene.layout.MigPane
 
 import static extension com.sirolf2009.duskcommander.util.PathExtensions.*
 import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
-import com.pastdev.jsch.nio.file.UnixSshFileSystem
 
 @Accessors class FileBrowserView extends SplitPane {
 
@@ -37,14 +35,9 @@ import com.pastdev.jsch.nio.file.UnixSshFileSystem
 		fileBrowser = new FileBrowser()
 		VBox.setVgrow(fileBrowser, Priority.ALWAYS)
 
-		terminal = new Terminal()
-		terminal.updatePrefs(new TerminalConfig() => [
-			setUnixTerminalStarter("/usr/bin/fish")
-			setBackgroundColor(Color.web("#002b36"))
-			setForegroundColor(Color.web("#839496"))
-			setCursorColor(Color.web("#93a1a1", 0.5d))
-		])
-		terminal.onTerminalFxReady[terminal.command("cd " + root + "\n")]
+		terminal = new Terminal(#["/bin/bash"])
+		terminal.solarizedDark()
+		terminal.command("cd " + root + "\n")
 
 		pathElements = new HBox() => [
 			getStyleClass().addAll("background", "path-buttons")
@@ -104,9 +97,9 @@ import com.pastdev.jsch.nio.file.UnixSshFileSystem
 				val uri = (getFileSystem() as UnixSshFileSystem).getUri()
 				val user = uri.getUserInfo()
 				val host = uri.getHost()
-				terminal.getOutputWriter()?.append('''ssh «user»@«host»''' + "\n")?.flush()
+				terminal.command('''ssh «user»@«host»''' + "\n")
 			} else {
-				terminal.getOutputWriter()?.append("cd " + it + "\n")?.flush()
+				terminal.command("cd " + it + "\n")
 			}
 		].computation().map [ path |
 			#[fileBrowserButton("/", path.resolve("/"))] + (0 ..< path.size()).map [

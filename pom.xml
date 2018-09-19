@@ -99,9 +99,9 @@
 			<version>2.2.0</version>
 		</dependency>
 		<dependency>
-			<groupId>com.kodedu.terminalfx</groupId>
-			<artifactId>terminalfx</artifactId>
-			<version>1.0.7</version>
+			<groupId>com.sirolf2009</groupId>
+			<artifactId>javafx-terminal</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>

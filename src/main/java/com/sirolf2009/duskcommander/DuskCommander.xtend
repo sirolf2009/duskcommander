@@ -52,14 +52,18 @@ class DuskCommander extends Application {
 		val commandHistory = new DraggableTab("CommandHistory") => [
 			setContent(new CommandHistory())
 		]
-		root.setRight(new DraggableTabPane(commandHistory) => [
-			makeCollapsing()
-		])
-
-		root.setLeft(new DraggableTabPane() => [
+		
+		val right = new DraggableTabPane() => [
 			makeCollapsing()
 			setPrefWidth(8)
-		])
+		] 
+		root.setRight(right)
+
+		val left = new DraggableTabPane() => [
+			makeCollapsing()
+			setPrefWidth(8)
+		] 
+		root.setLeft(left)
 
 		root.setTop(new MenuBar(new Menu("_File") => [
 			getItems().add(commandMenuItem("Toggle Debug", new ToggleDebug()))
@@ -119,12 +123,12 @@ class DuskCommander extends Application {
 
 		eventBus.type(ToggleDebug).subscribe[debugProperty.set(!debugProperty.get())]
 		eventBus.type(ToggleCommandHistory).subscribe [
+			println(right.getWidth())
 			if(commandHistory.getTabPane() === null) {
-				(root.getRight() as DraggableTabPane).getTabs().add(commandHistory)
+				right.getTabs().add(commandHistory)
 			} else {
 				commandHistory.getTabPane().getTabs().remove(commandHistory)
 			}
-//			commandHistory.setManaged(!commandHistory.isManaged())
 		]
 		eventBus.type(Quit).subscribe [
 			stop()
@@ -139,7 +143,7 @@ class DuskCommander extends Application {
 			if(getTabs().size() == 0) {
 				setPrefWidth(8)
 			} else {
-				setPrefWidth(200)
+				setPrefWidth(290)
 			}
 		]
 	}
