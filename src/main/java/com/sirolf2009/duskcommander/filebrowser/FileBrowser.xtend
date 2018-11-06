@@ -47,14 +47,14 @@ import static extension com.sirolf2009.util.TimeUtil.*
 		table.maximize()
 		table.setRowFactory = [
 			return new TableRow<Path>() => [
-				setOnMouseClicked = [evt|
+				setOnMouseClicked = [ evt |
 					if(evt.getClickCount() == 2 && !isEmpty()) {
 						DuskCommander.eventBus.onNext(new Open())
 					}
 				]
 			]
 		]
-		
+
 		table.getColumns().add(new TableColumn<Path, Path>("Type") => [
 			prefWidthProperty().bind(table.widthProperty().multiply(0.08))
 			setCellValueFactory = [
@@ -132,10 +132,7 @@ import static extension com.sirolf2009.util.TimeUtil.*
 				case KeyCode.ENTER,
 				case KeyCode.RIGHT: {
 					table.requestFocus()
-					val selected = Optional.ofNullable(table.getSelectionModel().getSelectedItem()).orElse(table.getItems().get(0))
-					if(!selected.isFile()) {
-						DuskCommander.eventBus.onNext(new FileBrowserSplit.Open())
-					}
+					DuskCommander.eventBus.onNext(new FileBrowserSplit.Open())
 				}
 				case KeyCode.LEFT: {
 					table.requestFocus()

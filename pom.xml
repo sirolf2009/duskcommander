@@ -133,6 +133,11 @@
 			<artifactId>draggabletabs</artifactId>
 			<version>1.0.3</version>
 		</dependency>
+		<dependency>
+			<groupId>com.sirolf2009</groupId>
+			<artifactId>fxgraph</artifactId>
+			<version>0.0.2</version>
+		</dependency>
 	</dependencies>
 
 	<build>

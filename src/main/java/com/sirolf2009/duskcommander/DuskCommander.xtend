@@ -123,7 +123,6 @@ class DuskCommander extends Application {
 
 		eventBus.type(ToggleDebug).subscribe[debugProperty.set(!debugProperty.get())]
 		eventBus.type(ToggleCommandHistory).subscribe [
-			println(right.getWidth())
 			if(commandHistory.getTabPane() === null) {
 				right.getTabs().add(commandHistory)
 			} else {

@@ -30,7 +30,7 @@ class SSHFileSystemPlugin implements FileSystemExtensionPoint {
 		return new MenuItem("SSH") => [
 				onAction = [
 					new ConnectionDialog().showAndWait().fromOptional().io().map [
-						val uri = new URI('''ssh.unix://«user»@«host»:22/''');
+						val uri = new URI('''ssh.unix://«user»@«host»:22/root''');
 						if(fileSystemMap.containsKey(uri)) {
 							fileSystemMap.get(uri)
 						} else {

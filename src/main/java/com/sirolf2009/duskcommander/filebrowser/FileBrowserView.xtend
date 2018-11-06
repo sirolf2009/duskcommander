@@ -35,7 +35,7 @@ import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
 		fileBrowser = new FileBrowser()
 		VBox.setVgrow(fileBrowser, Priority.ALWAYS)
 
-		terminal = new Terminal(#["/bin/bash"])
+		terminal = new Terminal(#["/usr/bin/fish"])
 		terminal.solarizedDark()
 		terminal.command("cd " + root + "\n")
 
