@@ -31,9 +31,11 @@ import static extension com.sirolf2009.duskcommander.util.PathExtensions.*
 import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
 import static extension com.sirolf2009.util.LongExtensions.*
 import static extension com.sirolf2009.util.TimeUtil.*
+import org.apache.logging.log4j.LogManager
 
 @Accessors class FileBrowser extends AnchorPane {
 
+	static val log = LogManager.getLogger()
 	val pathProperty = new SimpleObjectProperty<Path>()
 	val showHiddenProperty = new SimpleBooleanProperty(false)
 	val filterText = new SimpleStringProperty("")
@@ -205,6 +207,8 @@ import static extension com.sirolf2009.util.TimeUtil.*
 			table.getSelectionModel().select(0)
 			table.scrollTo(0)
 			pathProperty.set(path)
+		].doOnError [
+			log.error('''Failed to navigate to path «path»''', it)
 		]
 	}
 

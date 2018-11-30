@@ -22,12 +22,14 @@ import org.tbee.javafx.scene.layout.MigPane
 
 import static extension com.sirolf2009.duskcommander.util.PathExtensions.*
 import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
+import com.sirolf2009.javafxterminal.theme.ThemeSolarizedDark
+import javafx.scene.layout.StackPane
 
 @Accessors class FileBrowserView extends SplitPane {
 
-	val HBox commandElements
 	val HBox pathElements
 	val FileBrowser fileBrowser
+	val HBox commandElements
 	val Terminal terminal
 
 	new(Path root) {
@@ -35,9 +37,12 @@ import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
 		fileBrowser = new FileBrowser()
 		VBox.setVgrow(fileBrowser, Priority.ALWAYS)
 
-		terminal = new Terminal(#["/usr/bin/fish"])
-		terminal.solarizedDark()
+		terminal = new Terminal(#["/usr/bin/fish"], new ThemeSolarizedDark())
 		terminal.command("cd " + root + "\n")
+		val terminalParent = new StackPane(terminal)
+		terminal.widthProperty().bind(terminalParent.widthProperty())
+		terminal.heightProperty().bind(terminalParent.heightProperty())
+		VBox.setVgrow(terminalParent, Priority.ALWAYS)
 
 		pathElements = new HBox() => [
 			getStyleClass().addAll("background", "path-buttons")
@@ -68,7 +73,7 @@ import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
 			])
 		]
 
-		getItems().addAll(new VBox(debugPanel, commandElements, pathElements, fileBrowser), terminal)
+		getItems().addAll(new VBox(debugPanel, pathElements, fileBrowser), new VBox(commandElements, terminalParent))
 		setDividerPositions(0.8)
 
 		navigateTo(root).subscribe()

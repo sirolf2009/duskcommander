@@ -19,6 +19,7 @@ import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 
 import static extension com.sirolf2009.duskcommander.util.PathExtensions.*
 import static extension com.sirolf2009.duskcommander.util.RXExtensions.*
+import org.eclipse.xtend.lib.annotations.Data
 
 class FileBrowserSplit extends SplitPane {
 
@@ -48,9 +49,7 @@ class FileBrowserSplit extends SplitPane {
 			getPrimary().navigateTo(secundary).subscribe()
 		]
 		DuskCommander.eventBus.type(Open).subscribe [
-				println(it)
 			getPrimaryFile().ifPresent [
-				println(isFile())
 				if(isFile()) {
 					getPrimary().getTerminal().command('''xdg-open «toAbsolutePath()»''' + "\n")
 				} else {
@@ -105,6 +104,14 @@ class FileBrowserSplit extends SplitPane {
 			].subscribe [
 				refresh().subscribe()
 			]
+		]
+
+		DuskCommander.eventBus.type(ExecutePrimary).subscribe [
+			getPrimary().getTerminal().command(command)
+		]
+
+		DuskCommander.eventBus.type(ExecuteSecundary).subscribe [
+			getSecundary().getTerminal().command(command)
 		]
 
 		addEventFilter(KeyEvent.ANY) [
@@ -228,6 +235,14 @@ class FileBrowserSplit extends SplitPane {
 	}
 
 	static class Delete extends Command {
+	}
+
+	@Data static class ExecutePrimary extends Command {
+		val String command
+	}
+
+	@Data static class ExecuteSecundary extends Command {
+		val String command
 	}
 
 }
